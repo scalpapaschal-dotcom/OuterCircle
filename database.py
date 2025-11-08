@@ -10,7 +10,13 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 def get_db_connection():
     """Creates a database connection. The connection object can access columns by name."""
     if DATABASE_URL: # Production environment on Render
-        conn = psycopg2.connect(DATABASE_URL, cursor_factory=DictCursor)
+        try:
+            conn = psycopg2.connect(DATABASE_URL, cursor_factory=DictCursor)
+        except psycopg2.OperationalError as e:
+            print(f"!!! DATABASE CONNECTION FAILED: {e}")
+            # In a real-world app, you might want to retry or handle this more gracefully.
+            # For now, we'll re-raise the exception to see the error clearly in the logs.
+            raise
     else: # Local development environment
         conn = sqlite3.connect('outercircle.db')
         conn.row_factory = sqlite3.Row
