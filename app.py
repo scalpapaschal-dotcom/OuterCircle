@@ -38,11 +38,10 @@ def new_code():
     Generates a new code for a new user and shows the message submission page.
     """
     user_code = generate_unique_code()
-    db.create_user(user_code)
-    # Explicitly commit the new user to the database
     conn = db.get_db_connection()
-    conn.commit()
-    conn.close()
+    db.create_user(conn, user_code) # Pass the connection to the function
+    conn.commit() # Commit the changes on the same connection
+    conn.close() # Close the connection
     return render_template('OuterCircleCode.html', code=user_code)
 
 @app.route('/login', methods=['POST'])
@@ -84,11 +83,11 @@ def submit_message():
     }
 
     # Add the message to the database
-    db.add_message_for_code(code, new_message)
-    # Explicitly commit the new message to the database
     conn = db.get_db_connection()
-    conn.commit()
-    conn.close()
+    db.add_message_for_code(conn, code, new_message) # Pass the connection
+    conn.commit() # Commit on the same connection
+    conn.close() # Close the connection
+
     # Render the encouragement page, passing the user's code back.
     return render_template('EncouragementPage.html', code=code)
 

@@ -68,24 +68,20 @@ def code_exists(code):
     conn.close()
     return user is not None
 
-def create_user(code):
+def create_user(conn, code):
     """Adds a new user code to the database."""
-    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('INSERT INTO users (code) VALUES (%s)', (code,))
     cursor.close()
-    conn.close()
 
-def add_message_for_code(code, message_data):
+def add_message_for_code(conn, code, message_data):
     """Adds a new message for a given user code."""
-    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
         'INSERT INTO messages (user_code, message, sensitivity, delivery, timestamp_utc) VALUES (%s, %s, %s, %s, %s)',
         (code, message_data['message'], message_data['sensitivity'], message_data['delivery'], message_data['timestamp_utc'])
     )
     cursor.close()
-    conn.close()
 
 def get_all_messages_grouped():
     """Retrieves all messages, grouped by user code, for the admin view."""
