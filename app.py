@@ -9,6 +9,9 @@ import database as db # Import our new database module
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24) # Needed for session management
 
+# Initialize the database when the app module is first imported.
+db.init_db()
+
 # --- Configuration ---
 CODE_LENGTH = 4
 CODE_CHARS = string.ascii_uppercase + string.digits
@@ -85,24 +88,12 @@ def submit_message():
 def view_messages():
     """
     Admin-facing page to view all submitted messages.
-    NOTE: In a production environment, this route should be protected
-    with authentication and authorization.
+    NOTE: Authentication has been removed. This page is now public.
+    In a production environment, this route should be protected.
     """
     all_messages = db.get_all_messages_grouped()
-
-    # The data structure is now a flat list, so we need to group it for the template
-    # This is a good candidate to move into a template filter or do in the template itself
-    from itertools import groupby
-    
-    grouped_messages = {}
-    for k, g in groupby(all_messages, lambda m: m['user_code']):
-        grouped_messages[k] = list(g)
-
-    return render_template('admin_view.html', messages_db=grouped_messages)
+    return render_template('admin_view.html', messages=all_messages)
 
 if __name__ == '__main__':
     # Initialize the database when the app starts
-    db.init_db()
-    if not os.path.exists('templates'):
-        os.makedirs('templates')
-    app.run()
+    app.run(debug=True) # Use debug mode for local development

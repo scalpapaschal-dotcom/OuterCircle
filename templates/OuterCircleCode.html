@@ -290,6 +290,14 @@
       cursor: not-allowed;
     }
     @media (max-width: 850px) {
+      .ucode-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .btn-copy {
+        width: 100% !important;
+      }
       .container {
         padding: 14px 2vw 22px 2vw;
       }
@@ -379,6 +387,7 @@
               value="{{ code }}"
             />
           </div>
+          <button type="button" id="copyBtn" class="btn btn-secondary" style="margin-top: 8px; width: auto; padding: 8px 16px;">Copy Code</button>
           <div class="note">
             This code links your anonymous messages. Keep it safe and reuse it for every message.
             <strong>Do not share your code.</strong>
@@ -486,6 +495,18 @@
 
       // Re-enable button
       btn.disabled = false;
+    });
+
+    // Handle copy button click
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      const codeInput = document.getElementById('user-code');
+      navigator.clipboard.writeText(codeInput.value).then(() => {
+        const originalText = this.textContent;
+        this.textContent = 'Copied!';
+        setTimeout(() => {
+          this.textContent = originalText;
+        }, 1500);
+      });
     });
   </script>
 </body>
