@@ -74,7 +74,6 @@ def create_user(code):
     cursor = conn.cursor()
     cursor.execute('INSERT INTO users (code) VALUES (%s)', (code,))
     cursor.close()
-    conn.commit()
     conn.close()
 
 def add_message_for_code(code, message_data):
@@ -86,7 +85,6 @@ def add_message_for_code(code, message_data):
         (code, message_data['message'], message_data['sensitivity'], message_data['delivery'], message_data['timestamp_utc'])
     )
     cursor.close()
-    conn.commit()
     conn.close()
 
 def get_all_messages_grouped():
