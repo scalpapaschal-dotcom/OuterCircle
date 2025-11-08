@@ -28,66 +28,62 @@ def init_db(force_recreate=False):
     if not DATABASE_URL and force_recreate and os.path.exists('outercircle.db'):
         os.remove('outercircle.db')
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Create a 'users' table to store the unique codes.
-    # This ensures a user code is a persistent entity.
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            code TEXT PRIMARY KEY NOT NULL
-        )
-    ''')
-
-    # Create a 'messages' table with a foreign key relationship to the 'users' table.
-    # This links each message to a specific user code.
-    # Use SERIAL for auto-incrementing ID in PostgreSQL
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS messages (
-            id SERIAL PRIMARY KEY,
-            user_code TEXT NOT NULL,
-            message TEXT NOT NULL,
-            sensitivity TEXT,
-            delivery TEXT,
-            timestamp_utc TEXT NOT NULL,
-            FOREIGN KEY (user_code) REFERENCES users (code)
-        )
-    ''')
-
-    conn.close()
+    with get_db_connection() as conn:
+        with conn.cursor() as cursor:
+            # Create a 'users' table to store the unique codes.
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    code TEXT PRIMARY KEY NOT NULL
+                )
+            ''')
+            # Create a 'messages' table.
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS messages (
+                    id SERIAL PRIMARY KEY,
+                    user_code TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    sensitivity TEXT,
+                    delivery TEXT,
+                    timestamp_utc TEXT NOT NULL,
+                    FOREIGN KEY (user_code) REFERENCES users (code)
+                )
+            ''')
     print("Database initialized.")
 
 def code_exists(code):
     """Checks if a user code exists in the database."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT code FROM users WHERE code = %s', (code,))
-    user = cursor.fetchone()
-    cursor.close()
-    conn.close()
+    with get_db_connection() as conn:
+        with conn.cursor() as cursor:
+            # Use %s for PostgreSQL, ? for SQLite
+            sql = 'SELECT code FROM users WHERE code = %s' if DATABASE_URL else 'SELECT code FROM users WHERE code = ?'
+            cursor.execute(sql, (code,))
+            user = cursor.fetchone()
     return user is not None
 
-def create_user(conn, code):
+def create_user(code):
     """Adds a new user code to the database."""
-    cursor = conn.cursor()
-    cursor.execute('INSERT INTO users (code) VALUES (%s)', (code,))
-    cursor.close()
+    with get_db_connection() as conn:
+        with conn.cursor() as cursor:
+            sql = 'INSERT INTO users (code) VALUES (%s)' if DATABASE_URL else 'INSERT INTO users (code) VALUES (?)'
+            cursor.execute(sql, (code,))
 
-def add_message_for_code(conn, code, message_data):
+def add_message_for_code(code, message_data):
     """Adds a new message for a given user code."""
-    cursor = conn.cursor()
-    cursor.execute(
-        'INSERT INTO messages (user_code, message, sensitivity, delivery, timestamp_utc) VALUES (%s, %s, %s, %s, %s)',
-        (code, message_data['message'], message_data['sensitivity'], message_data['delivery'], message_data['timestamp_utc'])
-    )
-    cursor.close()
+    with get_db_connection() as conn:
+        with conn.cursor() as cursor:
+            sql = 'INSERT INTO messages (user_code, message, sensitivity, delivery, timestamp_utc) VALUES (%s, %s, %s, %s, %s)' if DATABASE_URL else 'INSERT INTO messages (user_code, message, sensitivity, delivery, timestamp_utc) VALUES (?, ?, ?, ?, ?)'
+            cursor.execute(sql, (
+                code,
+                message_data['message'],
+                message_data['sensitivity'],
+                message_data['delivery'],
+                message_data['timestamp_utc']
+            ))
 
 def get_all_messages_grouped():
     """Retrieves all messages, grouped by user code, for the admin view."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM messages ORDER BY user_code, timestamp_utc DESC')
-    messages = cursor.fetchall()
-    cursor.close()
-    conn.close()
+    with get_db_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT * FROM messages ORDER BY user_code, timestamp_utc DESC')
+            messages = cursor.fetchall()
     return messages
