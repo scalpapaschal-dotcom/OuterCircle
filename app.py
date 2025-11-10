@@ -100,7 +100,6 @@ def submit_message():
     return render_template('EncouragementPage.html', code=code)
 
 @app.route('/messages')
-def view_messages():
 @auth.login_required
 def view_messages():
     """
