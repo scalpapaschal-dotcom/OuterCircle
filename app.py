@@ -2,11 +2,19 @@ import secrets
 import string
 import os
 from flask import Flask, render_template, request, redirect, url_for
+from flask_httpauth import HTTPBasicAuth
 from datetime import datetime
 import database as db # Import our new database module
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
+auth = HTTPBasicAuth()
+
+# --- Admin Credentials from Environment Variables ---
+# For security, we load the admin username and password from environment variables.
+# You will need to set these in your Render dashboard.
+ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
 
 # Initialize the database when the app module is first imported.
 db.init_db()
@@ -14,6 +22,14 @@ db.init_db()
 # --- Configuration ---
 CODE_LENGTH = 4
 CODE_CHARS = string.ascii_uppercase + string.digits
+
+# --- Authentication Logic ---
+
+@auth.verify_password
+def verify_password(username, password):
+    """Checks if the provided username and password are correct."""
+    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        return username
 
 # --- Core Logic ---
 
@@ -85,9 +101,11 @@ def submit_message():
 
 @app.route('/messages')
 def view_messages():
+@auth.login_required
+def view_messages():
     """
     Admin-facing page to view all submitted messages.
-    NOTE: This page is public. In a production environment, this route should be protected.
+    This route is protected by HTTP Basic Authentication.
     """
     all_messages = db.get_all_messages_grouped()
     return render_template('admin_view.html', messages=all_messages)
