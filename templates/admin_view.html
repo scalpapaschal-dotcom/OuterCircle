@@ -5,97 +5,124 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - All Messages</title>
     <style>
+        :root {
+            --ice-blue: #e0f7fa;
+            --ice-blue-bg: #eaf7f7;
+            --cerulean: #007ba7;
+            --text: #0b2224;
+            --card-bg: #fff;
+            --shadow: 0 10px 30px rgba(6, 50, 58, 0.09);
+            --radius: 18px;
+            --muted: #6b7c7c;
+        }
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #f0f8ff;
-            color: #333;
+            background-color: var(--ice-blue-bg);
             margin: 0;
             padding: 20px;
+            color: var(--text);
         }
         .container {
-            max-width: 900px;
-            margin: auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            max-width: 1200px;
+            margin: 20px auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
         }
         h1 {
-            color: #007ba7;
-            text-align: center;
-            border-bottom: 2px solid #e0f7fa;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
+            color: var(--cerulean);
+            border-bottom: 2px solid var(--ice-blue);
+            padding-bottom: 10px;
+            margin-top: 0;
         }
-        .user-group {
+        .message-group {
             margin-bottom: 30px;
             border: 1px solid #d0f2f6;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
-            background-color: #faffff;
         }
-        .user-code {
+        .message-group h2 {
             font-size: 1.5rem;
-            font-weight: bold;
-            color: #005b83;
-            margin-bottom: 15px;
+            color: var(--cerulean);
+            margin: 0 0 15px 0;
         }
-        .message-card {
-            background: #fff;
-            border: 1px solid #e0f7fa;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        .message-item {
+            border-bottom: 1px solid #e0f7fa;
+            padding: 15px 0;
         }
-        .message-card:last-child {
-            margin-bottom: 0;
+        .message-item:last-child {
+            border-bottom: none;
         }
-        .message-content {
-            font-size: 1.1rem;
+        .message-body {
+            font-size: 1rem;
             line-height: 1.6;
-            margin-bottom: 12px;
-            white-space: pre-wrap; /* Preserve whitespace and newlines */
+            white-space: pre-wrap; /* Respects newlines in the message */
+            margin-bottom: 10px;
         }
         .message-meta {
             font-size: 0.9rem;
-            color: #6b7c7c;
+            color: var(--muted);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 20px;
         }
-        .meta-item {
-            background-color: #e6f7fb;
-            padding: 4px 8px;
-            border-radius: 4px;
+        .no-messages {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--muted);
+            padding: 50px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>All Submitted Messages</h1>
-        {% if not messages %}
-            <p style="text-align: center;">No messages have been submitted yet.</p>
-        {% else %}
-            {# Group messages by user_code #}
-            {% for user_code, user_messages in messages|groupby('user_code') %}
-                <div class="user-group">
-                    <h2 class="user-code">User Code: {{ user_code }}</h2>
-                    {% for message in user_messages %}
-                        <div class="message-card">
-                            <p class="message-content">{{ message.message }}</p>
+        <h1>Admin Message View</h1>
+
+        {% if messages %}
+            {# Jinja2's 'groupby' filter is perfect for this. We group all messages by their 'user_code'. #}
+            {% for group in messages | groupby('user_code') %}
+                <div class="message-group">
+                    <h2>User Code: {{ group.grouper }}</h2>
+                    
+                    {# Now we loop through all messages within this user's group. #}
+                    {% for msg in group.list %}
+                        <div class="message-item">
+                            <p class="message-body">{{ msg.message }}</p>
                             <div class="message-meta">
-                                <span>Timestamp: {{ message.timestamp_utc }}</span>
-                                <div>
-                                    <span class="meta-item">Sensitivity: {{ message.sensitivity }}</span>
-                                    <span class="meta-item">Delivery: {{ message.delivery }}</span>
-                                </div>
+                                <span><strong>Timestamp:</strong> {{ msg.timestamp_utc }}</span>
+                                <span><strong>Sensitivity:</strong> {{ msg.sensitivity }}</span>
+                                <span><strong>Deliver To:</strong> {{ msg.delivery }}</span>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
             {% endfor %}
+        {% else %}
+            <div class="no-messages">
+                <p>No messages have been submitted yet.</p>
+            </div>
         {% endif %}
     </div>
 </body>
 </html>
+
+```
+
+### What to Do Next
+
+1.  **Create the New File:** Save the code above into a new file named `admin_view.html` inside your `templates` folder (`c:/Users/user/OneDrive/Documents/GitHub/OuterCircleApp/templates/`).
+2.  **Commit and Push:** Use Git to add the new file and push your changes.
+    ```bash
+    git add .
+    git commit -m "feat: Create admin view page to display messages"
+    git push
+    ```
+
+Render will automatically deploy this new version. Once the deployment is complete, the "Internal Server Error" should be resolved, and you will be able to see your messages on the `/messages` page after logging in.
+
+If the error persists after this change, please share the traceback from the Render logs, and I'll be able to pinpoint the exact issue.
+
+<!--
+[PROMPT_SUGGESTION]How can I add a "delete message" button to the admin page?[/PROMPT_SUGGESTION]
+[PROMPT_SUGGESTION]Explain how the `groupby` filter works in Jinja2.[/PROMPT_SUGGESTION]
+-->
