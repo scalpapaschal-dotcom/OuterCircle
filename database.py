@@ -33,34 +33,35 @@ def init_db():
     Initializes the database by creating the necessary tables if they don't already exist.
     This function is called once when the application starts.
     """
-    conn = get_db_connection()
-    with conn.cursor() as cur:
-        # Create the 'users' table to store unique codes.
-        # The user_code is the primary key, ensuring each is unique.
-        cur.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                user_code VARCHAR(4) PRIMARY KEY,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        ''')
-
-        # Create the 'messages' table to store all submitted messages.
-        # It's linked to the 'users' table via the user_code foreign key.
-        # ON DELETE CASCADE means if a user is deleted, all their messages are also deleted.
-        cur.execute('''
-            CREATE TABLE IF NOT EXISTS messages (
-                id SERIAL PRIMARY KEY,
-                user_code VARCHAR(4) REFERENCES users(user_code) ON DELETE CASCADE,
-                message TEXT NOT NULL,
-                sensitivity VARCHAR(50),
-                delivery VARCHAR(50),
-                timestamp_utc TIMESTAMP WITH TIME ZONE NOT NULL,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        ''')
-    conn.commit()
-    conn.close()
-    print("Database initialized successfully.")
+    # This function should manage its own connection since it's run outside the app context.
+    conn = None
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        with conn.cursor() as cur:
+            # Create the 'users' table to store unique codes.
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    user_code VARCHAR(4) PRIMARY KEY,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+            ''')
+            # Create the 'messages' table.
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS messages (
+                    id SERIAL PRIMARY KEY,
+                    user_code VARCHAR(4) REFERENCES users(user_code) ON DELETE CASCADE,
+                    message TEXT NOT NULL,
+                    sensitivity VARCHAR(50),
+                    delivery VARCHAR(50),
+                    timestamp_utc TIMESTAMP WITH TIME ZONE NOT NULL,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+            ''')
+        conn.commit()
+        print("Database initialized successfully.")
+    finally:
+        if conn:
+            conn.close()
 
 # --- Database Interaction Functions ---
 
