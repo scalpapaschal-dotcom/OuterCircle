@@ -1,5 +1,6 @@
 import os
 import psycopg2
+from flask import g
 from psycopg2.extras import DictCursor
 
 # --- Database Connection ---
@@ -10,16 +11,22 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def get_db_connection():
     """
-    Establishes a connection to the PostgreSQL database.
-    Returns a connection object.
+    Establishes a new connection to the database if one doesn't exist for the current request.
+    The connection is stored in Flask's 'g' object, which is unique for each request.
     """
-    try:
-        conn = psycopg2.connect(DATABASE_URL, cursor_factory=DictCursor)
-        return conn
-    except psycopg2.OperationalError as e:
-        # This will help you debug if the DATABASE_URL is wrong or the database is down.
-        print(f"Error connecting to the database: {e}")
-        raise
+    if 'db_conn' not in g:
+        try:
+            g.db_conn = psycopg2.connect(DATABASE_URL, cursor_factory=DictCursor)
+        except psycopg2.OperationalError as e:
+            print(f"Error connecting to the database: {e}")
+            raise
+    return g.db_conn
+
+def close_db_connection(e=None):
+    """Closes the database connection at the end of the request."""
+    db_conn = g.pop('db_conn', None)
+    if db_conn is not None:
+        db_conn.close()
 
 def init_db():
     """
@@ -61,18 +68,16 @@ def code_exists(code):
     """Checks if a user code already exists in the database."""
     conn = get_db_connection()
     with conn.cursor() as cur:
-        cur.execute("SELECT 1 FROM users WHERE user_code = %s;", (code,))
+        cur.execute("SELECT 1 FROM users WHERE user_code = %s;", (code.upper(),))
         exists = cur.fetchone() is not None
-    conn.close()
     return exists
 
 def create_user(user_code):
     """Adds a new user with their unique code to the database."""
     conn = get_db_connection()
     with conn.cursor() as cur:
-        cur.execute("INSERT INTO users (user_code) VALUES (%s);", (user_code,))
+        cur.execute("INSERT INTO users (user_code) VALUES (%s);", (user_code.upper(),))
     conn.commit()
-    conn.close()
 
 def add_message_for_code(code, message_data):
     """Adds a new message for a given user code."""
@@ -84,7 +89,7 @@ def add_message_for_code(code, message_data):
             VALUES (%s, %s, %s, %s, %s);
             """,
             (
-                code,
+                code.upper(),
                 message_data['message'],
                 message_data['sensitivity'],
                 message_data['delivery'],
@@ -92,7 +97,6 @@ def add_message_for_code(code, message_data):
             )
         )
     conn.commit()
-    conn.close()
 
 def get_all_messages_grouped():
     """
@@ -104,9 +108,8 @@ def get_all_messages_grouped():
         # Fetch all messages, ordering by user_code and then by the timestamp
         # to ensure messages from the same user are together and in order.
         cur.execute(
-            "SELECT user_code, message, sensitivity, delivery, TO_CHAR(timestamp_utc, 'YYYY-MM-DD HH24:MI:SS') as timestamp_utc FROM messages ORDER BY user_code, timestamp_utc DESC;"
+            "SELECT id, user_code, message, sensitivity, delivery, TO_CHAR(timestamp_utc, 'YYYY-MM-DD HH24:MI:SS') as timestamp_utc FROM messages ORDER BY user_code, timestamp_utc DESC;"
         )
         messages = cur.fetchall()
-    conn.close()
     # The result is a list of dictionary-like objects, e.g., [{'user_code': 'ABCD', 'message': 'Hi', ...}]
     return messages

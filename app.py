@@ -106,6 +106,16 @@ def view_messages():
     all_messages = db.get_all_messages_grouped()
     return render_template('admin_view.html', messages=all_messages)
 
+@app.route('/delete-message/<int:message_id>', methods=['POST'])
+@auth.login_required
+def delete_message(message_id):
+    """
+    Admin action to delete a specific message.
+    """
+    db.delete_message_by_id(message_id)
+    # Redirect back to the admin message view after deletion
+    return redirect(url_for('view_messages'))
+
 if __name__ == '__main__':
     # Initialize the database when the app starts
     app.run(debug=True) # Use debug mode for local development
