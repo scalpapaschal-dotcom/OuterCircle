@@ -114,3 +114,10 @@ def get_all_messages_grouped():
         messages = cur.fetchall()
     # The result is a list of dictionary-like objects, e.g., [{'user_code': 'ABCD', 'message': 'Hi', ...}]
     return messages
+
+def delete_message_by_id(message_id):
+    """Deletes a specific message from the database by its ID."""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute("DELETE FROM messages WHERE id = %s;", (message_id,))
+    conn.commit()
