@@ -16,9 +16,6 @@ auth = HTTPBasicAuth()
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
 
-# Initialize the database when the app module is first imported.
-db.init_db()
-
 # --- Configuration ---
 CODE_LENGTH = 4
 CODE_CHARS = string.ascii_uppercase + string.digits

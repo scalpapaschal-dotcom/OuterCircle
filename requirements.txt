@@ -2,3 +2,4 @@ Flask
 waitress
 psycopg2-binary
 Flask-HTTPAuth
+python-dotenv
