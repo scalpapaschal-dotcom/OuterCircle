@@ -1,23 +1,22 @@
 import secrets
 import string
 import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for
 from flask_httpauth import HTTPBasicAuth
 from datetime import datetime
-import database as db # Import our new database module
+from dal import messages_dal as dal # Import our new Data Access Layer
+
+# Load environment variables from a .env file for local development
+load_dotenv()
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 
 # --- Admin Credentials from Environment Variables ---
-# For security, we load the admin username and password from environment variables.
-# You will need to set these in your Render dashboard.
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
-
-# Initialize the database when the app module is first imported.
-db.init_db()
 
 # --- Configuration ---
 CODE_LENGTH = 4
@@ -37,7 +36,7 @@ def generate_unique_code(): #It runs in a loop to ensure the generated code is u
     """Generates a unique code that is not already in use."""
     while True:
         new_code = ''.join(secrets.choice(CODE_CHARS) for _ in range(CODE_LENGTH))
-        if not db.code_exists(new_code):
+        if not dal.code_exists(new_code):
             return new_code
 
 # --- Flask Routes (Web Pages) ---
@@ -53,15 +52,14 @@ def new_code():
     Generates a new code for a new user and shows the message submission page.
     """
     user_code = generate_unique_code()
-    db.create_user(user_code)
+    dal.create_user(user_code)
     return render_template('OuterCircleCode.html', code=user_code)
 
 @app.route('/login', methods=['POST'])
 def login():
     """Validates an existing user code and shows the message submission page."""
     code = request.form.get('user-code', '').upper()
-
-    if code and db.code_exists(code):
+    if code and dal.code_exists(code):
         # If code is valid, show the submission page
         return render_template('OuterCircleCode.html', code=code)
     else:
@@ -81,7 +79,7 @@ def submit_message():
 
     # Basic validation
     # Check if the code exists in our new database
-    if not code or not db.code_exists(code):
+    if not code or not dal.code_exists(code):
         return render_template('Error.html'), 400
     if not message_text:
         return "Error: Message cannot be empty.", 400
@@ -95,7 +93,7 @@ def submit_message():
     }
 
     # Add the message to the database
-    db.add_message_for_code(code, new_message)
+    dal.add_message_for_code(code, new_message)
     # Render the encouragement page, passing the user's code back.
     return render_template('EncouragementPage.html', code=code)
 
@@ -106,9 +104,17 @@ def view_messages():
     Admin-facing page to view all submitted messages.
     This route is protected by HTTP Basic Authentication.
     """
-    all_messages = db.get_all_messages_grouped()
+    all_messages = dal.get_all_messages_grouped()
     return render_template('admin_view.html', messages=all_messages)
 
+@app.route('/delete-message/<int:message_id>', methods=['POST'])
+@auth.login_required
+def delete_message(message_id):
+    """Admin action to delete a specific message."""
+    dal.delete_message_by_id(message_id)
+    return redirect(url_for('view_messages'))
+
 if __name__ == '__main__':
-    # Initialize the database when the app starts
+    # For local development, initialize tables and run the app
+    dal.init_db_tables()
     app.run(debug=True) # Use debug mode for local development
