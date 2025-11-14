@@ -82,7 +82,7 @@ def submit_message():
     if not code or not dal.code_exists(code):
         return render_template('Error.html'), 400
     if not message_text:
-        return "Error: Message cannot be empty.", 400
+        return render_template('OuterCircleCode.html', code=code, error="Message cannot be empty."), 400
 
     # Create a message object
     new_message = {

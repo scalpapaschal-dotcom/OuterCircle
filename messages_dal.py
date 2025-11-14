@@ -81,12 +81,11 @@ def init_db_tables():
     Initializes the database by creating the necessary tables if they don't already exist.
     This function should manage its own connection since it's run outside the app context.
     """
-    # This is a simplified version of _execute_query for initialization
     conn = None
     try:
         db = Database()
-        conn = db.connection_pool.getconn()
-        with conn.cursor() as cur:
+        # Use a 'with' statement to ensure the connection is returned to the pool
+        with db.connection_pool.getconn() as conn, conn.cursor() as cur:
             # Create the 'users' table to store unique codes.
             cur.execute('''
                 CREATE TABLE IF NOT EXISTS users (
@@ -106,8 +105,8 @@ def init_db_tables():
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                 );
             ''')
-        conn.commit()
-        print("Database tables initialized successfully.")
-    finally:
-        if conn:
-            db.connection_pool.putconn(conn)
+            conn.commit()
+            print("Database tables checked/initialized successfully.")
+    except Exception as e:
+        print(f"Error during database initialization: {e}")
+        raise
