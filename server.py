@@ -1,7 +1,11 @@
 from waitress import serve
 from app import app # Import your Flask app instance
 import os
+from dotenv import load_dotenv
 from dal import messages_dal as dal # Import our new Data Access Layer
+
+# Load environment variables from .env file for local development
+load_dotenv()
 
 if __name__ == '__main__':
     # Initialize the database; this creates the tables if they don't exist.
