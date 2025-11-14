@@ -1,10 +1,14 @@
 import secrets
 import string
 import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for
 from flask_httpauth import HTTPBasicAuth
 from datetime import datetime
 import database as db # Import our new database module
+
+# Load environment variables from a .env file for local development
+load_dotenv()
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
@@ -15,6 +19,11 @@ auth = HTTPBasicAuth()
 # You will need to set these in your Render dashboard.
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
+
+# --- Database Connection Management ---
+@app.teardown_appcontext
+def close_db(e=None):
+    db.close_db_connection(e)
 
 # --- Configuration ---
 CODE_LENGTH = 4
@@ -78,10 +87,11 @@ def submit_message():
 
     # Basic validation
     # Check if the code exists in our new database
-    if not code or not db.code_exists(code):
-        return render_template('Error.html'), 400
+    if not code or not db.code_exists(code): # This check is failing
+        # Redirect back to the start page with an error if the code is missing or invalid
+        return render_template('start.html', error="Invalid or missing user code. Please try again."), 400
     if not message_text:
-        return "Error: Message cannot be empty.", 400
+        return render_template('OuterCircleCode.html', code=code, error="Message cannot be empty.")
 
     # Create a message object
     new_message = {
