@@ -69,7 +69,7 @@ def code_exists(code):
     """Checks if a user code already exists in the database."""
     conn = get_db_connection()
     with conn.cursor() as cur:
-        cur.execute("SELECT 1 FROM users WHERE user_code = %s;", (code.upper(),))
+        cur.execute("SELECT 1 FROM users WHERE user_code = %s;", (code,))
         exists = cur.fetchone() is not None
     return exists
 
