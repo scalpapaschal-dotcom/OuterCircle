@@ -74,6 +74,15 @@ def login():
         # If code is invalid, show the start page again with an error
         return render_template('start.html', error="Invalid code. Please try again or get a new one.")
 
+@app.route('/continue-with-code', methods=['POST'])
+def continue_with_code():
+    """
+    Allows a user to continue to the message submission page directly from another page,
+    like the encouragement page, without re-validating the code input.
+    """
+    code = request.form.get('user-code')
+    return render_template('OuterCircleCode.html', code=code)
+
 @app.route('/submit-message', methods=['POST'])
 def submit_message():
     """
