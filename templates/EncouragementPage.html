@@ -1,117 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Message Sent - OuterCircle</title>
-  <style>
-    :root{
-      --ice-blue: #e0f7fa;
-      --ice-blue-bg: #eaf7f7;
-      --cerulean: #007ba7;
-      --text: #0b2224;
-      --card-bg: #fff;
-      --shadow: 0 10px 30px rgba(6,50,58,0.09);
-      --radius: 18px;
-      --accent: #17b7d7;
-      --muted: #6b7c7c;
-    }
-    html,body{
-      height:100%;
-      margin:0;
-      padding:0;
-      background: linear-gradient(180deg, var(--ice-blue-bg) 0%, var(--ice-blue) 70%, var(--ice-blue-bg) 100%);
-      font-family: 'Segoe UI',Arial,sans-serif;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .container {
-      max-width: 600px;
-      margin: 32px;
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 44px 36px 32px 36px;
-      text-align: center;
-    }
-    .header-title {
-      font-size: 2.3rem;
-      font-weight: bold;
-      color: var(--text);
-      margin-bottom: 12px;
-    }
-    .message-text {
-      font-size: 1.1rem;
-      color: var(--muted);
-      line-height: 1.6;
-      margin-bottom: 32px;
-    }
-    .button-row {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      margin-top: 18px;
-    }
-    .btn {
-      border: none;
-      border-radius: 10px;
-      padding: 12px 28px;
-      font-size: 1.09rem;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 5px 14px rgba(0,123,167,0.07);
-      transition: background 0.17s, box-shadow 0.14s;
-      text-decoration: none;
-      display: inline-block;
-    }
-    .btn-primary {
-      background: var(--cerulean);
-      color: #fff;
-    }
-    .btn-primary:hover {
-      background: #005b83;
-    }
-    .btn-secondary {
-      background: #fff;
-      color: var(--cerulean);
-      border: 1.5px solid var(--ice-blue);
-    }
-    .btn-secondary:hover {
-      background: var(--ice-blue);
-    }
-    @media (max-width: 550px) {
-      .container {
-        margin: 16px;
-        padding: 24px 18px;
-      }
-      .header-title {
-        font-size: 1.8rem;
-      }
-      .button-row {
-        flex-direction: column;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Sent</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(180deg, #eaf7f7 0%, #e0f7fa 70%, #eaf7f7 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #0b2224;
+        }
+        .message-box {
+            background: #fff;
+            padding: 40px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(6,50,58,0.09);
+            text-align: center;
+            max-width: 400px;
+        }
+        .icon {
+            font-size: 4rem;
+            color: #007ba7;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #007ba7;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        .code {
+            font-weight: bold;
+            color: #007ba7;
+            background-color: #e6f7fb;
+            padding: 5px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .btn {
+            background: #007ba7;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 28px;
+            font-size: 1.09rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.17s;
+        }
+        .btn:hover {
+            background: #005b83;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header-title">Thank You</div>
-    <div class="message-text">
-      Your message has been sent anonymously. Speaking up is a brave first step, and we're here to listen.
-      <br><br>
-      Remember your code: <strong>{{ code }}</strong>
+    <div class="message-box">
+        <div class="icon">✨</div>
+        <h1>Message Sent Anonymously!</h1>
+        <p>
+            Your message has been delivered to the **OuterCircle** team. 
+            Remember to save your unique code for future submissions.
+        </p>
+        <p>Your Code: <span class="code">{{ code }}</span></p>
+        <a href="{{ url_for('home') }}" class="btn">Send Another Message</a>
     </div>
-    <div class="button-row">
-      <!-- This form now posts to the new route to go directly to the message page -->
-      <form action="{{ url_for('continue_with_code') }}" method="post" style="margin: 0;">
-        <input type="hidden" name="user-code" value="{{ code }}">
-        <button type="submit" class="btn btn-primary">Send Another Message</button>
-      </form>
-      <!-- This link takes the user back to the home page -->
-      <a href="{{ url_for('home') }}" class="btn btn-secondary">Return Home</a>
-    </div>
-  </div>
 </body>
 </html>

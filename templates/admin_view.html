@@ -14,7 +14,6 @@
             --shadow: 0 10px 30px rgba(6, 50, 58, 0.09);
             --radius: 18px;
             --muted: #6b7c7c;
-            --danger: #c0392b;
         }
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -67,23 +66,6 @@
             display: flex;
             gap: 20px;
         }
-        .message-actions {
-            margin-top: 15px;
-        }
-        .btn-delete {
-            background-color: transparent;
-            color: var(--danger);
-            border: 1px solid #f5c6cb;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-        .btn-delete:hover {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
         .no-messages {
             text-align: center;
             font-size: 1.2rem;
@@ -110,11 +92,6 @@
                                 <span><strong>Timestamp:</strong> {{ msg.timestamp_utc }}</span>
                                 <span><strong>Sensitivity:</strong> {{ msg.sensitivity }}</span>
                                 <span><strong>Deliver To:</strong> {{ msg.delivery }}</span>
-                            </div>
-                            <div class="message-actions">
-                                <form action="{{ url_for('delete_message', message_id=msg.id) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this message?');">
-                                    <button type="submit" class="btn-delete">Delete Message</button>
-                                </form>
                             </div>
                         </div>
                     {% endfor %}
