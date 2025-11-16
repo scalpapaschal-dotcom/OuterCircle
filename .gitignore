@@ -9,8 +9,8 @@ __pycache__/
 *.db
 *.db-journal*
 
-# Environment variables file
-.env
-
 # Old data files
 user_messages.json
+
+# Environment variables file (contains secrets!)
+.env
