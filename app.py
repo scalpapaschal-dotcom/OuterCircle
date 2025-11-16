@@ -106,7 +106,12 @@ def create_app():
         """
         Page to view all submitted messages.
         """
-        all_messages = db.get_all_messages_grouped()
+        # Retrieve all messages from the database.
+        messages_from_db = db.get_all_messages_grouped()
+        
+        # The Jinja 'groupby' filter requires the list to be sorted by the group key.
+        # We sort the list of messages by 'user_code' here in Python to ensure it's correct.
+        all_messages = sorted(messages_from_db, key=lambda x: x['user_code'])
         return render_template('admin_view.html', messages=all_messages)
 
     return app
