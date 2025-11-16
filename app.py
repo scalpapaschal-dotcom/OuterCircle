@@ -36,8 +36,9 @@ def create_app():
     # --- Flask Routes (Web Pages) ---
     @app.route('/')
     def home():
-        """Renders the start page where users can choose to get a new code or use an existing one."""
-        return render_template('start.html')
+        """Renders the start page, displaying an error message if one is provided."""
+        error_message = request.args.get('error')
+        return render_template('start.html', error=error_message)
 
     @app.route('/new-code')
     def new_code():
@@ -48,17 +49,26 @@ def create_app():
         db.create_user(user_code)
         return render_template('OuterCircleCode.html', code=user_code)
 
+    @app.route('/submit/<string:code>')
+    def show_submit_page(code):
+        """Shows the message submission page for a given valid code."""
+        if db.code_exists(code):
+            return render_template('OuterCircleCode.html', code=code)
+        else:
+            # If the code in the URL is invalid, redirect to the home page with an error.
+            return redirect(url_for('home', error="Invalid code. Please try again or get a new one."))
+
     @app.route('/login', methods=['POST'])
     def login():
         """Validates an existing user code and shows the message submission page."""
         code = request.form.get('user-code', '').upper()
 
         if code and db.code_exists(code):
-            # If code is valid, show the submission page
-            return render_template('OuterCircleCode.html', code=code)
+            # If code is valid, redirect to the submission page for that code.
+            return redirect(url_for('show_submit_page', code=code))
         else:
             # If code is invalid, show the start page again with an error
-            return render_render_template('start.html', error="Invalid code. Please try again or get a new one.")
+            return render_template('start.html', error="Invalid code. Please try again or get a new one.")
 
     @app.route('/submit-message', methods=['POST'])
     def submit_message():
@@ -100,3 +110,10 @@ def create_app():
         return render_template('admin_view.html', messages=all_messages)
 
     return app
+
+if __name__ == '__main__':
+    # This block allows you to run the app directly with `python app.py`
+    # for local development.
+    app = create_app()
+    # The waitress server is for production; for development, app.run() is great.
+    app.run(debug=True, port=5001)

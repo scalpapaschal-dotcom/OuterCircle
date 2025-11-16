@@ -5,124 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - All Messages</title>
     <style>
-        :root {
-            --ice-blue: #e0f7fa;
-            --ice-blue-bg: #eaf7f7;
-            --cerulean: #007ba7;
-            --text: #0b2224;
-            --card-bg: #fff;
-            --shadow: 0 10px 30px rgba(6, 50, 58, 0.09);
-            --radius: 18px;
-            --muted: #6b7c7c;
-        }
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--ice-blue-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
             margin: 0;
             padding: 20px;
-            color: var(--text);
         }
         .container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: 20px auto;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
         h1 {
-            color: var(--cerulean);
-            border-bottom: 2px solid var(--ice-blue);
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-        .message-group {
-            margin-bottom: 30px;
-            border: 1px solid #d0f2f6;
-            border-radius: 12px;
-            padding: 20px;
-        }
-        .message-group h2 {
-            font-size: 1.5rem;
-            color: var(--cerulean);
-            margin: 0 0 15px 0;
-        }
-        .message-item {
-            border-bottom: 1px solid #e0f7fa;
-            padding: 15px 0;
-        }
-        .message-item:last-child {
-            border-bottom: none;
-        }
-        .message-body {
-            font-size: 1rem;
-            line-height: 1.6;
-            white-space: pre-wrap; /* Respects newlines in the message */
-            margin-bottom: 10px;
-        }
-        .message-meta {
-            font-size: 0.9rem;
-            color: var(--muted);
-            display: flex;
-            gap: 20px;
-        }
-        .no-messages {
+            color: #2c3e50;
             text-align: center;
-            font-size: 1.2rem;
-            color: var(--muted);
-            padding: 50px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
         }
+        .user-group {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .user-code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #ecf0f1;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: #34495e;
+        }
+        .message {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        .message p { margin: 5px 0; }
+        .message-meta { font-size: 0.9em; color: #7f8c8d; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Admin Message View</h1>
+        <h1>All Submitted Messages</h1>
 
         {% if messages %}
-            {# Jinja2's 'groupby' filter is perfect for this. We group all messages by their 'user_code'. #}
+            {# Group messages by the user_code attribute #}
             {% for group in messages | groupby('user_code') %}
-                <div class="message-group">
-                    <h2>User Code: {{ group.grouper }}</h2>
+                <div class="user-group">
+                    <h2>Messages for User: <span class="user-code">{{ group.grouper }}</span></h2>
                     
-                    {# Now we loop through all messages within this user's group. #}
+                    {# Iterate through each message in the current group #}
                     {% for msg in group.list %}
-                        <div class="message-item">
-                            <p class="message-body">{{ msg.message }}</p>
-                            <div class="message-meta">
-                                <span><strong>Timestamp:</strong> {{ msg.timestamp_utc }}</span>
-                                <span><strong>Sensitivity:</strong> {{ msg.sensitivity }}</span>
-                                <span><strong>Deliver To:</strong> {{ msg.delivery }}</span>
-                            </div>
+                        <div class="message">
+                            <p><strong>Message:</strong> {{ msg.message }}</p>
+                            <p class="message-meta">
+                                <strong>Sensitivity:</strong> {{ msg.sensitivity }} | 
+                                <strong>Delivery:</strong> {{ msg.delivery }} | 
+                                <strong>Timestamp:</strong> {{ msg.timestamp_utc }} UTC
+                            </p>
                         </div>
                     {% endfor %}
                 </div>
             {% endfor %}
         {% else %}
-            <div class="no-messages">
-                <p>No messages have been submitted yet.</p>
-            </div>
+            <p>No messages have been submitted yet.</p>
         {% endif %}
     </div>
 </body>
 </html>
-
-```
-
-### What to Do Next
-
-1.  **Create the New File:** Save the code above into a new file named `admin_view.html` inside your `templates` folder (`c:/Users/user/OneDrive/Documents/GitHub/OuterCircleApp/templates/`).
-2.  **Commit and Push:** Use Git to add the new file and push your changes.
-    ```bash
-    git add .
-    git commit -m "feat: Create admin view page to display messages"
-    git push
-    ```
-
-Render will automatically deploy this new version. Once the deployment is complete, the "Internal Server Error" should be resolved, and you will be able to see your messages on the `/messages` page after logging in.
-
-If the error persists after this change, please share the traceback from the Render logs, and I'll be able to pinpoint the exact issue.
-
-<!--
-[PROMPT_SUGGESTION]How can I add a "delete message" button to the admin page?[/PROMPT_SUGGESTION]
-[PROMPT_SUGGESTION]Explain how the `groupby` filter works in Jinja2.[/PROMPT_SUGGESTION]
--->
